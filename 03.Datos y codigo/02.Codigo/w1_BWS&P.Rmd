@@ -1,0 +1,66 @@
+---
+title: "W1_data"
+output: pdf_document
+date: "2024-07-14"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Datos S&P 500
+
+Este conjunto de datos contiene información sobre 25 empresas que forman parte del S&P 500. El S&P 500 consta de 500 empresas elegidas por Standard & Poor's. Estas empresas representan 76% de la capitalización de mercado de todas las acciones de Estados Unidos.
+
+```{r }
+
+setwd('L:/99.Externado courses/01.course material/2024II/metodos/00.data') # Este es el directorio (carpeta) en donde estan sus datos.
+# la función setwd le da la dirección de esta carpera a Rstudio para que, cuando se lo indiquemos, busque información allí. Recuerden que
+# en algunos casos ese camino esta separado con backward slash (\), por lo que puede que necesiten cambiarlos por foward slash (/).
+
+
+data <- read.csv('w1_BWS&P.csv') # Luego de haber definido la carpeta en donde se encuentra el conjunto de datos con el que vamos a trabajar,
+# debemos cargas esa información a Rstudio. Para ello, vamos a asignar un objeto en el ambiente. En mi caso, lo nombré 'data', pero ustedes 
+# puede ponerle otro nombre (simpre y cuando no incluya espacios en blanco o caracteres extraños).
+
+View(data)
+
+```
+
+## Gráficos
+
+```{r , echo=FALSE}
+plot(data$Precio,log(data$Ganancia))
+```
+
+# Estrcutras de datos
+
+## Corte trasnversal
+
+```{r , echo=FALSE}
+data_CT <- read.csv('w1_BWS&P_CT.csv')
+print(data_CT)
+```
+
+## Serie de tiempo
+
+```{r , echo=FALSE}
+data_ST <- read.csv('w1_BWS&P_ST.csv')
+print(data_ST)
+```
+
+## Corte trasnversal agrupado
+
+```{r , echo=FALSE}
+data_CTA <- read.csv('w1_BWS&P_CTA.csv')
+print(data_CTA)
+
+```
+
+## Panel o olongitudinal
+
+```{r , echo=FALSE}
+data_P <- read.csv('w1_BWS&P_P.csv')
+print(data_P)
+
+```

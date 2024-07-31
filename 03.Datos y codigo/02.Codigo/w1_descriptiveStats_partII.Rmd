@@ -1,0 +1,217 @@
+---
+title: "w1_descriptiveStats_partI"
+output: pdf_document
+date: "2024-07-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+#install.packages('AER')
+#install.packages('viridis')
+library(viridis)
+library(AER)
+data() # Vamos a utilizar la función data para ver el listado de datos pre cargados en R
+data(CigarettesB) # Seleccionamos la tabla 'CigarettesB' y la cargamos en el ambiente
+
+help("CigarettesB") # mediante la función "help" podran ver la documentación de la tabla de datos. Help tambien puede aplicarse a otros elementos en R, desde paquetes, hasta funciones.
+
+```
+
+# Medidas de posición
+
+## Media
+```{r , echo=TRUE}
+
+sum_cp <- sum(CigarettesB$packs)
+n_cp <- nrow(CigarettesB)
+
+mean_cp <- sum_cp/n_cp
+mean_cp <- mean(CigarettesB$packs)
+```
+## Moda
+
+```{r , echo=TRUE}
+
+valores <- unique(CigarettesB$packs)
+table(valores)
+# En este caso, ningun valor de la variable de interes tiene frecuencia mayor a 1. En este caso
+# la variable no tiene moda.
+```
+
+## Mediana
+
+```{r , echo=TRUE}
+
+n <- nrow 
+
+
+
+median(CigarettesB$pack) 
+CigarettesB <- CigarettesB[order(CigarettesB$pack,decreasing = TRUE),]
+
+```
+
+
+
+```{r , echo=TRUE}
+
+table(Guns_1999$law) / nrow(Guns_1999) # Frecuencias relativas
+table(Guns_1999$law) / nrow(Guns_1999) * 100 # Frecuencias relativas porcentuales
+```
+
+Podemos consolidar estos resultados, e incluso construirlos, dentro de un objeto tipo *data frame*
+
+```{r , echo=TRUE}
+
+RF <- data.frame(table(Guns_1999$law)) # Tabla de frecuencia convertida en una tabla de datos
+n <- nrow(Guns_1999) # Numero de estados
+
+RF$FreqR <- RF$Freq/n    # Frecuencia relativa
+RF$FreqPR <- RF$FreqR * 100  # Frecuencia porcentual relativa
+
+nombres <- c('Ley_porte','Frecuencia','Frecuencia_relativa', 'Frecuencia_p_relativa')
+names(RF) <- nombres
+row.names(RF) <- as.character(RF$Ley_porte)
+
+RF
+```
+
+# Gráfico de torta
+
+```{r , echo=TRUE}
+
+pie(
+  RF$Frecuencia, # Cuales datos vamos a gráficar?
+  labels = RF$Ley_porte, # Cuales son las etiquietas de esos datos?
+  main = "Gráfico de torta con la frecuencia de Leyes de porte en 51 estados (1999)" # Cual es el titulo del gráfico?
+
+)
+
+# Tambien podemos construir la torta  desde la función table
+# pie(
+#   table(Guns_1999$law),
+#   main = "Gráfico de torta con la frecuencia de Leyes de porte en 51 estados (1999)" # Cual es el titulo del gráfico?
+# 
+# )
+#
+
+```
+
+# Gráfico de barras
+
+```{r , echo=TRUE}
+
+par(mfrow = c(1,2)) # argumento para cambiar nuestro ambiente gráfico. Lo definimos ahora con una fila y una columna
+
+
+barplot(
+  RF$Frecuencia,
+  names.arg = RF$Ley_porte,
+  main = "Diagrama de Barras",
+  ylab = "Cantidad de Estados según estado de leyes de porte",
+  col = "lightblue")
+
+barplot(
+  RF$Frecuencia,
+  names.arg = RF$Ley_porte,
+  main = "Diagrama de Barras",
+  ylab = "Cantidad de Estados según estado de leyes de porte",
+  col = "pink",
+  horiz = TRUE)
+
+```
+
+# Gráfico de pareto
+
+El Diagrama de Pareto es un caso particular del gráfico de barras, en el que las barras que representan los factores correspondientes a una magnitud cualquiera están ordenados de mayor a menor (en orden descendente) y de izquierda a derecha.
+
+```{r , echo=TRUE}
+#install.packages("qcc")
+library(qcc)
+
+qcc::pareto.chart(table(Guns_1999$law),
+             main = "Cantidad de Estados según estado de leyes de porte")
+
+```
+
+# Histograma
+
+Un histograma se construye colocando la variable de interés en el eje horizontal y la frecuencia (o frecuencia relativa o frecuencia porcentual) en el eje vertical.
+
+Uno de los usos más importantes de un histograma es proveer información acerca de la forma de la distribución de la variable.
+
+```{r , echo=TRUE}
+
+# Clases
+# 
+struge <- function(n){
+  round (3.3 * (log(n)) +1,0)
+}  # Define una función, parametrizada en el número de observaciones, para definir el total de clases.
+
+C <- struge(nrow(Guns))# aplica la función del número de clases para todo el panel de datos Guns
+print(C)
+
+# Rango
+# 
+R <- max(Guns$violent) - min(Guns$violent) # Con las funciones max y min, calcula el rango de la variable murder en el panel Guns.
+print(R)
+
+# Ancho
+# 
+w <- R/C
+print(w)
+
+hist(Guns$violent,breaks = C,
+     xlab = "Intervalos de clase",
+     ylab = "Frecuencia",
+     freq = TRUE, 
+     main = "Histograma de la V. crimenes violentos",
+     col = viridis::magma(C, direction = -1))
+
+
+
+```
+
+# Tablas cruzadas
+
+```{r , echo=TRUE}
+library(dplyr)
+library(tidyr)
+
+hist_murder <- hist(Guns$murder,breaks = C )
+Guns$clase_murder <- cut(Guns$murder, 
+                         hist_murder$breaks)
+
+Guns[Guns$year == 1999,] %>%
+group_by(clase_murder, law) %>%
+summarise(n = n()) %>%
+mutate(freq = n / sum(n)) %>%
+  select(-n) %>%
+  spread(clase_murder, freq) 
+
+Guns[Guns$year == 1999,] %>%
+group_by(clase_murder, law) %>%
+summarise(n = n()) %>%
+  spread(clase_murder, n) 
+
+Guns %>%
+group_by(year, law) %>%
+summarise(n = n()) %>%
+  spread(law, n) 
+
+```
+
+# Diagramas de dispersión
+
+```{r , echo=TRUE}
+
+plot(Guns_1999$violent,
+     Guns_1999$male , 
+     col = "lightblue", 
+     main = "Scatterplot",
+     xlab = "Acciones violentas",
+     ylab = "Proporción de hombres jóvenes")
+
+abline(lm(Guns_1999$male ~ Guns_1999$violent), col = "red")
+
+```
