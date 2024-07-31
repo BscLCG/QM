@@ -44,6 +44,9 @@ valores <- unique(CigarettesB$packs)
 table(valores)
 
 # En este caso, ningun valor de la variable de interes tiene frecuencia mayor a 1. En este caso la variable no tiene moda.
+
+Mo.d <- function(x) as.numeric(names(which.max(table(x))))
+Mo.d(CigarettesB$packs)
 ```
 ## Mediana
 
@@ -112,7 +115,7 @@ quantile(CigarettesB$packs,type = 2,probs = c(0.25,0.5,0.75))
 
 ```
 
-# Box plot
+## Box plot
 ```{r , echo=TRUE}
 
 boxplot(CigarettesB$packs, col = "darkseagreen2", ylab = "Realización de la variable",
@@ -124,9 +127,179 @@ CigarettesB$grupo_ingreso <- cut(CigarettesB$income,
                    breaks=c(0, 4.677470, 4.758505,4.854900, Inf), 
                    labels=c("low","middle","high","Very High"))
 
-boxplot(income ~  grupo_ingreso , data = CigarettesB, main = "Kilometraje",
-xlab = "Cilindros", ylab = "Kilometros por litro",
+boxplot(income ~  grupo_ingreso , data = CigarettesB, main = "Consumo de cigarrillos",
+xlab = "Grupos de ingreso", ylab = "Paquetes de cigarrillo consumidos",
 col = c("darksalmon", "darkslategray3", "deeppink","darkseagreen2"))
 
 ```
+
+# Medidas de variabilidad
+
+## Rango y rango intercuartilico
+```{r , echo=TRUE}
+# Para identificar el rango de la variable de interes vamos a utilizar las funciones min y max para calcular el mayor y menor valor observado.
+minimo <- min(CigarettesB$packs)
+maximo <- max(CigarettesB$packs)
+
+# Tambien podemos utilizar la función range
+rango  <- maximo-minimo
+print(rango)
+range(CigarettesB$packs)
+
+# Para el rango intercuartilico podemos utilizar el proceso de percentiles, identificado el cuartil 1 (Q1) y el cuartil 3 (Q3)
+
+Q1 <- as.numeric(quantile(CigarettesB$packs,type = 2,probs = c(0.25,0.5,0.75))[1])
+Q3 <- as.numeric(quantile(CigarettesB$packs,type = 2,probs = c(0.25,0.5,0.75))[3])
+rango_iq <-  Q3 - Q1
+print(rango_iq)
+    
+```
+
+## Varianza
+```{r , echo=TRUE}
+#PASO1: calcula la media
+mean_cp <- mean(CigarettesB$packs)
+
+#PASO2: define la desviación cuadrada de cada observación respecto a la media
+CigarettesB$desv_cp <- (CigarettesB$packs - mean_cp)^2
+
+#PASO3: suma todas las desviaciones cuadrada
+sum_desv_cp <- sum(CigarettesB$desv_cp)
+
+#PASO4: divide sobre n-1
+var_cp <- sum_desv_cp/(nrow(CigarettesB) - 1)
+print(var_cp)    
+
+# Podemos hacer el mismo proceso utilizando la funcion var
+var(CigarettesB$packs)
+
+```
+
+## Desviación estándar
+```{r , echo=TRUE}
+# Para calcular la desviación estándar, aplicamos raiz cuadrada a la varianza
+s_cp <- sqrt(var_cp)
+print(s_cp)
+
+# Podemos hacer el mismo cálculo utilizando la función sd
+sd(CigarettesB$packs)
+```
+
+## Desviación estándar
+```{r , echo=TRUE}
+# Para calcular la desviación estándar, aplicamos raiz cuadrada a la varianza
+s_cp <- sqrt(var_cp)
+print(s_cp)
+
+# Podemos hacer el mismo cálculo utilizando la función sd
+sd(CigarettesB$packs)
+```
+
+## Puntaje Z y Tchebychev
+```{r , echo=TRUE}
+# Dado que el puntaje Z se calcula paracada observación de la variable, es posible construir una nueva variable con estos valores
+CigarettesB$packs <- round (CigarettesB$packs,2)
+s_cp <- sd(CigarettesB$packs)
+
+CigarettesB$z_cp <-round((CigarettesB$packs - mean_cp)/s_cp,3)
+hist(CigarettesB$z_cp, main = "Histograma de los puntajes Z del consumo de cigarrillo",
+                        xlab = "Puntaje Z",
+                        ylab = "Frecuencia",
+                        col = "darkslategray3")
+
+# Podemos además definir la función del teorema de Tchebychev para estimar el porcentaje de valores de la población que se encontrara a menos de una distancia especifica de la media.
+
+Tchebychev <- function(K) {
+  (1-(1/(K^2)))*100
+}
+
+#Valores de K
+valores_k <- seq(1,4,1)
+
+# Aplica la funcion de indice i a cada valor de la lista de percentiles
+lista_i <- sapply(valores_k, Tchebychev)
+print(lista_i)
+
+k <- CigarettesB$z_cp[CigarettesB$packs == 5.38]
+  (1-(1/(k^2)))*100
+
+# El minimo porcentaje de stados contenidos en 2.7 desviaciones estandar de la media es del 87%
+
+xi_up = round((k*s_cp) + mean_cp,2)
+xi_down = round((-k*s_cp) + mean_cp,2)
+```
+
+## Coeficiente de variación
+```{r , echo=TRUE}
+cv <- (s_cp/mean_cp)*100
+
+cv_high <- (sd(CigarettesB$packs[CigarettesB$grupo_ingreso == "high"]) /
+      mean(CigarettesB$packs[CigarettesB$grupo_ingreso == "high"]) ) * 100
+
+cv_low <- (sd(CigarettesB$packs[CigarettesB$grupo_ingreso == "low"]) /
+      mean(CigarettesB$packs[CigarettesB$grupo_ingreso == "low"]) ) * 100
+
+cv_vhigh <- (sd(CigarettesB$packs[CigarettesB$grupo_ingreso == "Very High"]) /
+      mean(CigarettesB$packs[CigarettesB$grupo_ingreso == "Very High"]) ) * 100
+```
+
+# Medidas de asociación
+
+## Covarianza y varianza
+```{r , echo=TRUE}
+
+sum((CigarettesB$price-mean(CigarettesB$price))*(CigarettesB$packs-mean(CigarettesB$packs)))/(nrow(CigarettesB)-1)
+
+# PASO1: calcula las medias de las dos variables
+mean_cp <- mean(CigarettesB$packs)
+mean_pi <- mean(CigarettesB$price)
+
+# PASO2: calcula la desviación respeco a cada media
+CigarettesB$desv_cp <- CigarettesB$packs - mean_cp
+CigarettesB$desv_pi <- CigarettesB$price - mean_pi
+
+# PAS03: calcula el producto de las deviaciones
+CigarettesB$p_cp_ci <- CigarettesB$desv_cp * CigarettesB$desv_pi 
+
+# PAS04: suma el producto de las deviaciones
+sum_p_cp_ci <- sum (CigarettesB$p_cp_ci)
+
+# PASO5: divide la suma del producto entre el numerode observaciones
+cov_cp_ci <- sum_p_cp_ci / (nrow(CigarettesB) -1)
+cov(CigarettesB$price,CigarettesB$packs)
+
+# PASO1: calcula las desviaciones estandar de las dos variables
+s_cp <- sd(CigarettesB$packs)
+s_pi <- sd(CigarettesB$price)
+
+# PASO2: divide la covarianza en el producto de las deviaciones
+cor_cp_ci <- cov_cp_ci/(s_cp*s_pi)
+
+cor(CigarettesB[c('packs','price')])
+
+library(ggplot2)
+x=CigarettesB$packs
+y=CigarettesB$packs
+data <- data.frame(x, y)
+simple.arrow <- arrow(length = unit(0.2, "cm"))
+ggplot(aes(x=x, y=y), data=data) + 
+  geom_vline(xintercept=mean(x), linetype="dotted") + 
+  geom_hline(yintercept=mean(y), linetype="dotted") +
+  geom_segment(aes(y = mean(y), xend = x, yend = y, colour=y>mean(y)), arrow = simple.arrow) +
+  geom_segment(aes(x = mean(x), xend = x, yend = y, colour=x>mean(x)), arrow = simple.arrow) +
+  geom_rect(aes(
+    xmin = ifelse(x > mean(x), mean(x), x),
+    xmax = ifelse(x > mean(x), x, mean(x)),
+    ymin = ifelse(y > mean(y), mean(y), y),
+    ymax = ifelse(y > mean(y), y, mean(y)),
+    fill = (x-mean(x)) * (y-mean(y)) > 0
+  ),
+  alpha = 0.1) +
+  geom_point() +
+  theme_minimal()
+
+
+```
+
+
 
