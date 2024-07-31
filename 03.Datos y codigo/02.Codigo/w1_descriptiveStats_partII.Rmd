@@ -112,5 +112,21 @@ quantile(CigarettesB$packs,type = 2,probs = c(0.25,0.5,0.75))
 
 ```
 
+# Box plot
+```{r , echo=TRUE}
 
+boxplot(CigarettesB$packs, col = "darkseagreen2", ylab = "Realización de la variable",
+main = "Boxplot")
+
+quantile(CigarettesB$income,type = 2,probs = c(0.25,0.5,0.75))
+
+CigarettesB$grupo_ingreso <- cut(CigarettesB$income, 
+                   breaks=c(0, 4.677470, 4.758505,4.854900, Inf), 
+                   labels=c("low","middle","high","Very High"))
+
+boxplot(income ~  grupo_ingreso , data = CigarettesB, main = "Kilometraje",
+xlab = "Cilindros", ylab = "Kilometros por litro",
+col = c("darksalmon", "darkslategray3", "deeppink","darkseagreen2"))
+
+```
 
