@@ -16,34 +16,46 @@ data(CigarettesB) # Seleccionamos la tabla 'CigarettesB' y la cargamos en el amb
 help("CigarettesB") # mediante la función "help" podran ver la documentación de la tabla de datos. Help tambien puede aplicarse a otros elementos en R, desde paquetes, hasta funciones.
 
 ```
-
-# Medidas de posición
+# Medidas de posición central
+Las medidas de  localización suministran información numérica acerca del patrón o tendencia que exhiben la muestra aleatoria
 
 ## Media
-```{r , echo=TRUE}
-sum_cp <- sum(CigarettesB$packs)
-n_cp <- nrow(CigarettesB)
 
-mean_cp <- sum_cp/n_cp
+```{r , echo=TRUE}
+# Identifica la suma de todos los valores en la variable packs
+sum_cp <- sum(CigarettesB$packs)
+
+# Identifica el númeto total de observaciones
+n_cp <- nrow(CigarettesB) 
+
+# Calcula el promedio
+mean_cp <- sum_cp/n_cp 
+
+# Podemos hacer el mismo calculo con la función mean
 mean_cp <- mean(CigarettesB$packs)
 ```
+
 ## Moda
 
 ```{r , echo=TRUE}
-valores <- unique(CigarettesB$packs)
-table(valores)
-# En este caso, ningun valor de la variable de interes tiene frecuencia mayor a 1. En este caso
-# la variable no tiene moda.
-```
+# La función unique permite eliminar los duplicados de una variable, en este caso esto nos permite identificar los valores que se repiten (y no).
+valores <- unique(CigarettesB$packs) 
 
+# Calculamos una frecuencia simple para identificar cual es el valor de packs que se repite mas o, en otras palabras, que tiene mayor frecuencia.
+
+table(valores)
+
+# En este caso, ningun valor de la variable de interes tiene frecuencia mayor a 1. En este caso la variable no tiene moda.
+```
 ## Mediana
 
 ```{r , echo=TRUE}
-n <- nrow(CigarettesB) # La función nrow identifica el número de filas de un dataframe o matriz. En este caso el número de filas corresponde al número de observacines.
-
+# La función nrow identifica el número de filas de un dataframe o matriz. En este caso el número de filas corresponde al número de observacines.
+n <- nrow(CigarettesB) 
 CigarettesB$pack[order(CigarettesB$pack,decreasing = TRUE)]
 
-print(n) # 46 es par, por lo que la media será el promedio de los dos datos que ocupan la posición central
+# 46 es par, por lo que la media será el promedio de los dos datos que ocupan la posición central
+print(n) 
 
 dato_centro1 <- n/2 # centro
 dato_centro2 <- dato_centro1 + 1 # valor a la derecha del centro
@@ -60,167 +72,48 @@ CigarettesB <- CigarettesB[order(CigarettesB$pack,decreasing = TRUE),]
 median(CigarettesB$pack) 
 ```
 
+# Medidas de posición no central
+Medidas de colocación para una distribución de frecuencia es aquel valor para el cual una posición especifica de la distribución queda en o debajo de éste.
 
-
-```{r , echo=TRUE}
-
-table(Guns_1999$law) / nrow(Guns_1999) # Frecuencias relativas
-table(Guns_1999$law) / nrow(Guns_1999) * 100 # Frecuencias relativas porcentuales
-```
-
-Podemos consolidar estos resultados, e incluso construirlos, dentro de un objeto tipo *data frame*
+## Percentiles y cuartiles
 
 ```{r , echo=TRUE}
 
-RF <- data.frame(table(Guns_1999$law)) # Tabla de frecuencia convertida en una tabla de datos
-n <- nrow(Guns_1999) # Numero de estados
+CigarettesB <- CigarettesB[order(CigarettesB$pack,decreasing = FALSE),]
 
-RF$FreqR <- RF$Freq/n    # Frecuencia relativa
-RF$FreqPR <- RF$FreqR * 100  # Frecuencia porcentual relativa
+# Definimos vector de percentiles
+lista_percentiles <- seq(0,100,5)
 
-nombres <- c('Ley_porte','Frecuencia','Frecuencia_relativa', 'Frecuencia_p_relativa')
-names(RF) <- nombres
-row.names(RF) <- as.character(RF$Ley_porte)
+# Define número de observaciones
+n_cigarrettes <- nrow(CigarettesB)
 
-RF
-```
+# Crea función de indice i
+i <- function(p){(p/100)*n_cigarrettes }
 
-# Gráfico de torta
+# Aplica la funcion de indice i a cada valor de la lista de percentiles
+lista_i <- (sapply(lista_percentiles, i))
 
-```{r , echo=TRUE}
+# Genera una tabla con los resultados
+percentiles_indices <- data.frame(p = lista_percentiles, i = lista_i)
 
-pie(
-  RF$Frecuencia, # Cuales datos vamos a gráficar?
-  labels = RF$Ley_porte, # Cuales son las etiquietas de esos datos?
-  main = "Gráfico de torta con la frecuencia de Leyes de porte en 51 estados (1999)" # Cual es el titulo del gráfico?
+# Percentil 25
+percentiles_indices$i[percentiles_indices$p == 25]
+CigarettesB$packs[12]
 
-)
+# Percentil 50
+percentiles_indices$i[percentiles_indices$p == 50] # el indice es par, debemos promediar
+(CigarettesB$packs[23] + CigarettesB$packs[24] )/2
 
-# Tambien podemos construir la torta  desde la función table
-# pie(
-#   table(Guns_1999$law),
-#   main = "Gráfico de torta con la frecuencia de Leyes de porte en 51 estados (1999)" # Cual es el titulo del gráfico?
-# 
-# )
-#
+# Percentil 
+percentiles_indices$i[percentiles_indices$p == 75]
+CigarettesB$packs[35] 
 
-```
+# Podemos hacer el calculo con la funcion quantile
 
-# Gráfico de barras
-
-```{r , echo=TRUE}
-
-par(mfrow = c(1,2)) # argumento para cambiar nuestro ambiente gráfico. Lo definimos ahora con una fila y una columna
-
-
-barplot(
-  RF$Frecuencia,
-  names.arg = RF$Ley_porte,
-  main = "Diagrama de Barras",
-  ylab = "Cantidad de Estados según estado de leyes de porte",
-  col = "lightblue")
-
-barplot(
-  RF$Frecuencia,
-  names.arg = RF$Ley_porte,
-  main = "Diagrama de Barras",
-  ylab = "Cantidad de Estados según estado de leyes de porte",
-  col = "pink",
-  horiz = TRUE)
+quantile(CigarettesB$packs,type = 2)
+quantile(CigarettesB$packs,type = 2,probs = c(0.25,0.5,0.75))
 
 ```
 
-# Gráfico de pareto
-
-El Diagrama de Pareto es un caso particular del gráfico de barras, en el que las barras que representan los factores correspondientes a una magnitud cualquiera están ordenados de mayor a menor (en orden descendente) y de izquierda a derecha.
-
-```{r , echo=TRUE}
-#install.packages("qcc")
-library(qcc)
-
-qcc::pareto.chart(table(Guns_1999$law),
-             main = "Cantidad de Estados según estado de leyes de porte")
-
-```
-
-# Histograma
-
-Un histograma se construye colocando la variable de interés en el eje horizontal y la frecuencia (o frecuencia relativa o frecuencia porcentual) en el eje vertical.
-
-Uno de los usos más importantes de un histograma es proveer información acerca de la forma de la distribución de la variable.
-
-```{r , echo=TRUE}
-
-# Clases
-# 
-struge <- function(n){
-  round (3.3 * (log(n)) +1,0)
-}  # Define una función, parametrizada en el número de observaciones, para definir el total de clases.
-
-C <- struge(nrow(Guns))# aplica la función del número de clases para todo el panel de datos Guns
-print(C)
-
-# Rango
-# 
-R <- max(Guns$violent) - min(Guns$violent) # Con las funciones max y min, calcula el rango de la variable murder en el panel Guns.
-print(R)
-
-# Ancho
-# 
-w <- R/C
-print(w)
-
-hist(Guns$violent,breaks = C,
-     xlab = "Intervalos de clase",
-     ylab = "Frecuencia",
-     freq = TRUE, 
-     main = "Histograma de la V. crimenes violentos",
-     col = viridis::magma(C, direction = -1))
 
 
-
-```
-
-# Tablas cruzadas
-
-```{r , echo=TRUE}
-library(dplyr)
-library(tidyr)
-
-hist_murder <- hist(Guns$murder,breaks = C )
-Guns$clase_murder <- cut(Guns$murder, 
-                         hist_murder$breaks)
-
-Guns[Guns$year == 1999,] %>%
-group_by(clase_murder, law) %>%
-summarise(n = n()) %>%
-mutate(freq = n / sum(n)) %>%
-  select(-n) %>%
-  spread(clase_murder, freq) 
-
-Guns[Guns$year == 1999,] %>%
-group_by(clase_murder, law) %>%
-summarise(n = n()) %>%
-  spread(clase_murder, n) 
-
-Guns %>%
-group_by(year, law) %>%
-summarise(n = n()) %>%
-  spread(law, n) 
-
-```
-
-# Diagramas de dispersión
-
-```{r , echo=TRUE}
-
-plot(Guns_1999$violent,
-     Guns_1999$male , 
-     col = "lightblue", 
-     main = "Scatterplot",
-     xlab = "Acciones violentas",
-     ylab = "Proporción de hombres jóvenes")
-
-abline(lm(Guns_1999$male ~ Guns_1999$violent), col = "red")
-
-```
