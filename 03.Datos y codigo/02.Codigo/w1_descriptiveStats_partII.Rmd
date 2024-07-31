@@ -21,7 +21,6 @@ help("CigarettesB") # mediante la función "help" podran ver la documentación d
 
 ## Media
 ```{r , echo=TRUE}
-
 sum_cp <- sum(CigarettesB$packs)
 n_cp <- nrow(CigarettesB)
 
@@ -31,7 +30,6 @@ mean_cp <- mean(CigarettesB$packs)
 ## Moda
 
 ```{r , echo=TRUE}
-
 valores <- unique(CigarettesB$packs)
 table(valores)
 # En este caso, ningun valor de la variable de interes tiene frecuencia mayor a 1. En este caso
@@ -41,14 +39,25 @@ table(valores)
 ## Mediana
 
 ```{r , echo=TRUE}
+n <- nrow(CigarettesB) # La función nrow identifica el número de filas de un dataframe o matriz. En este caso el número de filas corresponde al número de observacines.
 
-n <- nrow 
+CigarettesB$pack[order(CigarettesB$pack,decreasing = TRUE)]
 
+print(n) # 46 es par, por lo que la media será el promedio de los dos datos que ocupan la posición central
 
+dato_centro1 <- n/2 # centro
+dato_centro2 <- dato_centro1 + 1 # valor a la derecha del centro
 
-median(CigarettesB$pack) 
+CigarettesB$pack[dato_centro1]
+CigarettesB$pack[dato_centro2]
+
 CigarettesB <- CigarettesB[order(CigarettesB$pack,decreasing = TRUE),]
 
+# Promedio de los dos datos centrales
+(CigarettesB$pack[dato_centro1] + CigarettesB$pack[dato_centro2] ) / 2
+
+# Podemos hacer este mismo cálculo con la función median
+median(CigarettesB$pack) 
 ```
 
 
