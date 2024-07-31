@@ -20,7 +20,6 @@ help("CigarettesB") # mediante la función "help" podran ver la documentación d
 Las medidas de  localización suministran información numérica acerca del patrón o tendencia que exhiben la muestra aleatoria
 
 ## Media
-
 ```{r , echo=TRUE}
 # Identifica la suma de todos los valores en la variable packs
 sum_cp <- sum(CigarettesB$packs)
@@ -36,7 +35,6 @@ mean_cp <- mean(CigarettesB$packs)
 ```
 
 ## Moda
-
 ```{r , echo=TRUE}
 # La función unique permite eliminar los duplicados de una variable, en este caso esto nos permite identificar los valores que se repiten (y no).
 valores <- unique(CigarettesB$packs) 
@@ -76,7 +74,6 @@ median(CigarettesB$pack)
 Medidas de colocación para una distribución de frecuencia es aquel valor para el cual una posición especifica de la distribución queda en o debajo de éste.
 
 ## Percentiles y cuartiles
-
 ```{r , echo=TRUE}
 
 CigarettesB <- CigarettesB[order(CigarettesB$pack,decreasing = FALSE),]
