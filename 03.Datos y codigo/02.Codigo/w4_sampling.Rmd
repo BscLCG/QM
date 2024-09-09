@@ -1,0 +1,109 @@
+---
+title: "w4_sampling"
+author: "Luis Carlos Guevara"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+#install.packages('viridis')
+#install.packages('survival')
+library(viridis)
+library(survival)
+library(dplyr)
+
+#data() 
+colon <- survival::colon 
+
+```
+# Muestreo aleatorio simple
+
+Para realizar un mue streo eficaz, debemos tratar de dar una probabilidad positiva a la selección de todas las unidades de la población, de modo que la muestra sea realmente representativa de la población.
+
+Esto se denomina muestreo probabilístico. Un esquema de muestreo probabilístico se denomina muestreo aleatorio simple, SRS, si da la misma probabilidad de selección para cada miembro de la población.
+
+Existen dos tipos de muestreo aleatorio simple, en función de si seleccionamos a los individuos uno a uno con o sin devolución de los individuos muestreados a la población.
+
+Cuando devolvemos los individuos seleccionados inmediatamente a la población, realizamos un muestreo aleatorio simple con sustitución o SRSWR, y si no devolvemos los individuos muestreados, realizamos un muestreo aleatorio simple sin sustitución o SRSWOR.
+
+# Cómo generar una muestra aleatoria?
+
+En la práctica, utilizamos una serie de números aleatorios adecuada para extraer muestras al azar.\
+\
+Existen diferentes series de números aleatorios disponibles en libros y ordenadores. En R podemos utilizar fácilmente el comando sample para extraer muestras aleatorias utilizando SRSWR o SRSWOR.
+
+```{r , echo=TRUE}
+# Retira duplicados
+#table(colon$id)
+table(duplicated(colon$id))
+colon_unique <- colon[!duplicated(colon$id),]
+
+# Muestra aleatoria simple utilizando la funcion sample
+sample(colon_unique$id, size = 100)
+
+# Muestra aleatoria simple con reemplazo 
+sample(colon_unique$id, size = 100, replace = TRUE)
+table(duplicated(sample(colon$id, size = 100, replace = TRUE)))
+
+# Muestra aleatoria simple sin reemplazo
+sample(colon_unique$id, size = 100, replace = FALSE)
+table(duplicated(sample(colon_unique$id, size = 100, replace = FALSE)))
+```
+
+Hasta el momento, la muestra aleatoria es solo de los números de identificación de las unidades. Es necesario, ahora, vincular esta selección a un subconjunto que contenga las demás variables del conjunto de datos.
+
+```{r , echo=TRUE}
+# se asigna las identificaciones a un vector de valores
+muestra <- sample(colon_unique$id, size = 100, replace = FALSE)
+
+# se genera un subconjunto de datos únicamente con las observaciones de la muestra
+colon_unique_muestra <- colon_unique[colon_unique$id %in% muestra,]
+mean(colon_unique_muestra$age)
+
+# Para "anclar" el proceso aleatorio que genera la muestra, es posible utilizar la función "set.seed" antes de generar la muestra.
+
+set.seed(12345)
+muestra <- sample(colon_unique$id, size = 100, replace = FALSE)
+colon_unique_muestra <- colon_unique[colon_unique$id %in% muestra,]
+mean(colon_unique_muestra$age)
+
+```
+
+## Muestra por segmentos o estratos
+
+```{r , echo=TRUE}
+table(colon_unique$sex)
+
+strat_sample <- colon_unique %>%
+                  group_by(sex) %>%
+                  sample_n(size = 100)
+
+table(strat_sample$sex)
+
+## Hombres
+set.seed(12345)
+muestra_h <- sample(colon_unique$id[colon_unique$sex == 1],
+                    size = 100,
+                    replace = FALSE)
+
+colon_h <- colon_unique[colon_unique$id %in% muestra_h,]
+table(colon_h$sex)
+
+## mujeres
+set.seed(12345)
+muestra_m <- sample(colon_unique$id[colon_unique$sex == 0],
+                    size = 100,
+                    replace = FALSE)
+
+colon_m <- colon_unique[colon_unique$id %in% muestra_m,]
+table(colon_m$sex)
+
+## Rbind de las muestras individuales
+
+strat_sample <- rbind(colon_m,colon_h)
+table(strat_sample$sex)
+
+```
