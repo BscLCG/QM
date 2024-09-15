@@ -107,3 +107,48 @@ strat_sample <- rbind(colon_m,colon_h)
 table(strat_sample$sex)
 
 ```
+
+## Muestreos repetidos
+
+```{r , echo=TRUE}
+table(colon_unique$sex)
+
+# define una lista en donde guardaremos cada una de las muestras que vamos a generar
+lista <- list()
+sample_age <- data.frame(sample_id = character(),
+                        mean      = numeric(),
+                        sd        = numeric(),
+                        n         = numeric())
+
+# inicia loop (o bucle). La idea es tomar una muestra aleatoria sin reemplazo 1000 veces.
+# para ello utilizamos la estructura de control for
+
+# define el numero de muestras 
+n <- 10000
+
+# define el tamaño de muestra
+sample_size <- 100
+
+for(i in 1:n){
+  lista[[i]] <- colon_unique %>%
+                  sample_n(size = sample_size)
+  
+  loop_aux <- data.frame(sample_id = i,
+                        mean       = mean(lista[[i]]$age),
+                        sd         = sd(lista[[i]]$age),
+                        n          = nrow(lista[[i]]))
+  
+  sample_age <- rbind(sample_age,loop_aux)
+  rm(loop_aux)
+}
+
+
+round(mean(sample_age$mean),2)
+round(mean(colon_unique$age),2)
+
+hist(sample_age$mean)
+```
+
+
+
+
