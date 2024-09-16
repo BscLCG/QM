@@ -118,13 +118,14 @@ lista <- list()
 sample_age <- data.frame(sample_id = character(),
                         mean      = numeric(),
                         sd        = numeric(),
-                        n         = numeric())
+                        n         = numeric(),
+                        p_50_60   = numeric())
 
 # inicia loop (o bucle). La idea es tomar una muestra aleatoria sin reemplazo 1000 veces.
 # para ello utilizamos la estructura de control for
 
 # define el numero de muestras 
-n <- 10000
+n <- 100
 
 # define el tamaño de muestra
 sample_size <- 100
@@ -136,7 +137,9 @@ for(i in 1:n){
   loop_aux <- data.frame(sample_id = i,
                         mean       = mean(lista[[i]]$age),
                         sd         = sd(lista[[i]]$age),
-                        n          = nrow(lista[[i]]))
+                        n          = nrow(lista[[i]]),
+                        prop       = nrow(lista[[i]][lista[[i]]$age > 49 & lista[[i]]$age < 61,]) / nrow(lista[[i]])
+  )
   
   sample_age <- rbind(sample_age,loop_aux)
   rm(loop_aux)
@@ -147,8 +150,69 @@ round(mean(sample_age$mean),2)
 round(mean(colon_unique$age),2)
 
 hist(sample_age$mean)
+hist(sample_age$prop)
 ```
 
+# Estimación por intervalo
+
+```{r , echo=TRUE}
+
+plot(density(colon_unique$age))
+shapiro.test(colon_unique$age)
+
+muestra <- sample(colon_unique$id, size = 100, replace = FALSE)
+colon_unique_muestra <- colon_unique[colon_unique$id %in% muestra,]
+
+mean_age <- mean(colon_unique_muestra$age)
+sd_age   <- sd(colon_unique_muestra$age)
+
+n <- nrow(colon_unique_muestra)
+alpha <- 0.05
+Ci <- qt(p = alpha/2, df = n-1, lower.tail= FALSE)
+
+lower <- mean_age - (Ci * (sd_age/sqrt(n)))
+upper <-  mean_age + (Ci * (sd_age/sqrt(n)))
+
+cat(paste("[",round(lower,5),round(upper,5),"]"))
+
+t.test(colon_unique_muestra$age)$"conf.int"
 
 
+lista_i <- list()
+sample_i <- data.frame(sample_id  = character(),
+                       lower      = numeric(),
+                       upper      = numeric(),
+                       mean       = numeric(),
+                       sd         = numeric(),
+                       n          = numeric())
+n <- 10
+alpha <- 0.05
+Ci <- qt(p = alpha/2, df = n-1, lower.tail= FALSE)
+sample_size <- 100
 
+for(i in 1:n){
+  lista_i[[i]] <- colon_unique %>%
+                  sample_n(size = sample_size)
+  
+  loop_aux  <- data.frame(sample_id  = i,
+                          lower      = mean(lista[[i]]$age) - (Ci * (sd(lista[[i]]$age)/sqrt(n))),
+                          upper      = mean(lista[[i]]$age) + (Ci * (sd(lista[[i]]$age)/sqrt(n))),
+                          mean       = mean(lista[[i]]$age),
+                          sd         = sd(lista[[i]]$age),
+                          n          = nrow(lista[[i]])
+  )
+  
+  sample_i <- rbind(sample_i,loop_aux)
+  rm(loop_aux)
+}
+
+sample_i$contenido <-  mean(colon_unique$age) > sample_i$lower & mean(colon_unique$age) <  sample_i$upper
+
+library(ggplot2)
+ggplot(sample_i, aes(sample_id, mean)) +        # ggplot2 plot with confidence intervals
+  geom_point() +
+  geom_errorbar(aes(ymin = lower, ymax = upper)) +
+  geom_hline(yintercept = mean(colon_unique$age), linetype = "dashed", color = "red")
+
+
+```
