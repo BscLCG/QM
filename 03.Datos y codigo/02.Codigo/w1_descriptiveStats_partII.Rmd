@@ -97,7 +97,8 @@ lista_percentiles <- seq(0,100,5)
 n_cigarrettes <- nrow(CigarettesB)
 
 # Crea función de indice i
-i <- function(p){(p/100)*n_cigarrettes }
+i <- function(p){
+                  (p/100) * n_cigarrettes }
 
 # Aplica la funcion de indice i a cada valor de la lista de percentiles
 lista_i <- (sapply(lista_percentiles, i))
@@ -120,7 +121,7 @@ CigarettesB$packs[35]
 # Podemos hacer el calculo con la funcion quantile
 
 quantile(CigarettesB$packs,type = 2)
-quantile(CigarettesB$packs,type = 2,probs = c(0.25,0.5,0.75))
+quantile(CigarettesB$packs,type = 2, probs = c(0.25,0.5,0.75))
 
 ```
 
@@ -128,14 +129,18 @@ quantile(CigarettesB$packs,type = 2,probs = c(0.25,0.5,0.75))
 
 ```{r , echo=TRUE}
 
-boxplot(CigarettesB$packs, col = "darkseagreen2", ylab = "Realización de la variable",
-main = "Boxplot")
+boxplot(CigarettesB$packs, 
+        col = "darkseagreen2",
+        ylab = "Realización de la variable",
+        main = "Boxplot")
 
 quantile(CigarettesB$income,type = 2,probs = c(0.25,0.5,0.75))
 
 CigarettesB$grupo_ingreso <- cut(CigarettesB$income, 
-                   breaks=c(0, 4.677470, 4.758505,4.854900, Inf), 
-                   labels=c("low","middle","high","Very High"))
+                   breaks = c(0, 4.677470, 4.758505,4.854900, Inf), 
+                   labels = c("low","middle","high","Very High"))
+
+table(CigarettesB$grupo_ingreso) /nrow(CigarettesB)
 
 boxplot(income ~  grupo_ingreso , data = CigarettesB, main = "Consumo de cigarrillos",
 xlab = "Grupos de ingreso", ylab = "Paquetes de cigarrillo consumidos",
@@ -217,6 +222,7 @@ CigarettesB$packs <- round (CigarettesB$packs,2)
 s_cp <- sd(CigarettesB$packs)
 
 CigarettesB$z_cp <-round((CigarettesB$packs - mean_cp)/s_cp,3)
+
 hist(CigarettesB$z_cp, main = "Histograma de los puntajes Z del consumo de cigarrillo",
                         xlab = "Puntaje Z",
                         ylab = "Frecuencia",
@@ -236,6 +242,7 @@ lista_i <- sapply(valores_k, Tchebychev)
 print(lista_i)
 
 k <- CigarettesB$z_cp[CigarettesB$packs == 5.38]
+
   (1-(1/(k^2)))*100
 
 # El minimo porcentaje de stados contenidos en 2.7 desviaciones estandar de la media es del 87%
@@ -299,6 +306,7 @@ x=CigarettesB$packs
 y=CigarettesB$packs
 data <- data.frame(x, y)
 simple.arrow <- arrow(length = unit(0.2, "cm"))
+
 ggplot(aes(x=x, y=y), data=data) + 
   geom_vline(xintercept=mean(x), linetype="dotted") + 
   geom_hline(yintercept=mean(y), linetype="dotted") +

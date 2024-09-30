@@ -185,7 +185,7 @@ sample_i <- data.frame(sample_id  = character(),
                        mean       = numeric(),
                        sd         = numeric(),
                        n          = numeric())
-n <- 10
+n <- 100
 alpha <- 0.05
 Ci <- qt(p = alpha/2, df = n-1, lower.tail= FALSE)
 sample_size <- 100
@@ -216,3 +216,123 @@ ggplot(sample_i, aes(sample_id, mean)) +        # ggplot2 plot with confidence i
 
 
 ```
+
+
+```{r}
+install.packages("lsr")
+
+
+```
+
+# Pruebas de hipotesis
+
+El peso medio de todos los habitantes de la ciudad Bogotá es de 168 lbs.
+
+Una nutricionista cree que la media real es diferente. Ha medido el peso de 36 personas y ha hallado que la media es de 169,5 libras, con una desviación típica de 3,9. (a) Enuncie las hipótesis nula y alternativa. (b) Con un nivel de confianza del 95%, ¿hay pruebas suficientes para descartar la hipótesis nula? (Utilice el método del valor p)
+
+```{r}
+# H0: mu = 168
+# H1: mu != 168
+
+y_mu <- 168
+y_bar <- 169.5
+s <- 3.9
+n <- 36
+gl = n - 1
+confidence <- 0.95
+alpha <- 1 - confidence
+
+Z_stat <- (169.5 - 168) / (s/sqrt(n))
+
+# Método de valores críticos ---
+
+## En este ejemplo estamos abordando una prueba de dos colas
+# Queremos definir el valor Z asociado al nivel de significancia de 0.025 en cada una de las dos colas. 1 - 0.025 (0.975) es el área acumula a la izquierda del punto z positivo que nos interesa, que n este caso es 1.96
+
+z1 <- qnorm(0.975)
+z2 <- -z1
+
+Z_stat > z1
+
+# Método de p-valor  ---
+
+pvalue <- 2 *(1 - pnorm(Z_stat))
+alpha < pvalue
+
+```
+Una fábrica fabrica carros con una garantía de 5 años para el motor y la transmisión. Un ingeniero cree que el motor o la transmisión funcionarán mal en menos de 5 años. Hace pruebas con una muestra de 40 coches y encuentra que el tiempo medio es de 4,8 años con una desviación típica de 0,50. (a) Enuncie las hipótesis nula y alternativa. (b) A un nivel de significación del 2%, ¿hay pruebas suficientes que apoyen la idea de que debe revisarse la garantía?
+
+```{r}
+# H0: mu >= 5
+# H1: mu < 5
+
+y_mu <- 5
+y_bar <- 4.8
+s <- 0.5
+n <- 40
+gl = n - 1
+confidence <- 0.98
+alpha <- 1 - confidence
+
+Z_stat <- (4.8 - 5) / (s/sqrt(n))
+
+# Método de valores críticos ---
+
+z1 <- qnorm(0.98)
+Z_stat < - z1
+
+# Método de p-valor  ---
+
+pvalue <-  pnorm(Z_stat)
+pvalue < alpha 
+
+```
+
+```{r}
+# H0: mu = 0
+# H1: mu > 0
+
+y_mu <- 0
+y_bar <- 8.2
+s <- 23.9
+n <- 36
+gl = n - 1
+confidence <- 0.95
+alpha <- 1 - confidence
+
+t_stat <- (y_bar - y_mu) / (s/sqrt(n))
+
+# Método de valores críticos ---
+
+c <- qt(confidence,df = gl)
+
+t_stat > c
+
+# Método de p-valor  ---
+
+pvalue <-  1 - pt(t_stat, df = gl)
+pvalue < alpha 
+
+```
+
+```{r}
+
+# single sample
+turtle_weights <- c(300, 315, 320, 311, 314, 309, 300, 308, 305, 303, 305, 301, 303)
+t.test(x = turtle_weights, mu = 310)
+
+# non paired two sample
+sample1 <- c(300, 315, 320, 311, 314, 309, 300, 308, 305, 303, 305, 301, 303)
+sample2 <- c(335, 329, 322, 321, 324, 319, 304, 308, 305, 311, 307, 300, 305)
+
+t.test(x = sample1, y = sample2)
+
+#  paired two sample
+
+before <- c(22, 24, 20, 19, 19, 20, 22, 25, 24, 23, 22, 21)
+after <- c(23, 25, 20, 24, 18, 22, 23, 28, 24, 25, 24, 20)
+
+t.test(x = before, y = after, paired = TRUE)
+
+```
+
